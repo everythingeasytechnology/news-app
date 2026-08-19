@@ -358,6 +358,18 @@ export const newsSections: { key: string; title: string; data: Article[] }[] = [
   { key: "movies", title: "Movies", data: moviesData },
 ];
 
+export const allSections: { key: string; title: string; data: Article[] }[] = [
+  { key: "breaking", title: "Breaking News", data: breakingNewsData },
+  ...newsSections,
+];
+
+export function getSectionByKey(
+  key: string | undefined,
+): { key: string; title: string; data: Article[] } | undefined {
+  if (!key) return undefined;
+  return allSections.find((section) => section.key === key);
+}
+
 export const allArticles: Article[] = [
   ...breakingNewsData,
   ...recommendationData,

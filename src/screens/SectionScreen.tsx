@@ -10,38 +10,24 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ChevronLeft, Search, SlidersHorizontal } from "lucide-react-native";
-import { allArticles } from "@/src/data/newsData";
+import { Search, SlidersHorizontal } from "lucide-react-native";
+import { Article } from "@/src/data/newsData";
 
-const CATEGORIES: { label: string; filter: string | null }[] = [
-  { label: "All", filter: null },
-  { label: "Politic", filter: "Politics" },
-  { label: "Sport", filter: "Sports" },
-  { label: "Education", filter: "Education" },
-  { label: "Gaming", filter: "Gaming" },
-  { label: "Technology", filter: "Technology" },
-  { label: "Health", filter: "Health" },
-  { label: "Travel", filter: "Travel" },
-  { label: "Movies", filter: "Movies" },
-  { label: "Business", filter: "Business" },
-];
+interface SectionScreenProps {
+  title: string;
+  articles: Article[];
+}
 
-export default function ExploreScreen() {
+export default function SectionScreen({ title, articles }: SectionScreenProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   const filteredArticles = useMemo(() => {
-    return allArticles.filter((article) => {
-      const matchesCategory =
-        !selectedCategory || article.category === selectedCategory;
-      const matchesQuery = article.title
-        .toLowerCase()
-        .includes(query.trim().toLowerCase());
-      return matchesCategory && matchesQuery;
-    });
-  }, [selectedCategory, query]);
+    const q = query.trim().toLowerCase();
+    if (!q) return articles;
+    return articles.filter((article) => article.title.toLowerCase().includes(q));
+  }, [articles, query]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,7 +39,7 @@ export default function ExploreScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Discover</Text>
+        <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>News from all around the world</Text>
 
         <View style={styles.searchBar}>
@@ -67,35 +53,6 @@ export default function ExploreScreen() {
           />
           <SlidersHorizontal color="#6B7280" size={20} />
         </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryRow}
-        >
-          {CATEGORIES.map((category) => {
-            const isActive = selectedCategory === category.filter;
-            return (
-              <TouchableOpacity
-                key={category.label}
-                onPress={() => setSelectedCategory(category.filter)}
-                style={[
-                  styles.categoryPill,
-                  isActive && styles.categoryPillActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    isActive && styles.categoryTextActive,
-                  ]}
-                >
-                  {category.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
 
         <View style={styles.articleList}>
           {filteredArticles.map((item) => (
@@ -143,15 +100,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 16,
   },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#F3F4F6",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
   title: {
     fontSize: 34,
     fontWeight: "800",
@@ -171,32 +119,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 52,
     gap: 10,
+    marginBottom: 24,
   },
   searchInput: {
     flex: 1,
     fontSize: 15,
     color: "#000000",
-  },
-  categoryRow: {
-    gap: 10,
-    paddingVertical: 20,
-  },
-  categoryPill: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 9999,
-    backgroundColor: "#F3F4F6",
-  },
-  categoryPillActive: {
-    backgroundColor: "#0EA5E9",
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6B7280",
-  },
-  categoryTextActive: {
-    color: "#FFFFFF",
   },
   articleList: {
     gap: 20,

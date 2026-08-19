@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
   },
   topControls: {
     position: 'absolute',
-    left: 20,
-    right: 20,
+    left: 15,
+    right: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -108,8 +108,8 @@ const styles = StyleSheet.create({
   },
   heroBottom: {
     position: 'absolute',
-    left: 20,
-    right: 20,
+    left: 15,
+    right: 15,
     bottom: 40,
   },
   badge: {
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     paddingTop: 28,
     paddingBottom: 48,
   },

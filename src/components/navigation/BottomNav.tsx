@@ -2,17 +2,17 @@ import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Home, Globe, Bookmark, User } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useThemeColors } from "@/src/store/hooks";
 
 export default function BottomNav({
   state,
   descriptors,
   navigation,
 }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets();
+  const { colors } = useThemeColors();
 
   const getIcon = (routeName: string, isFocused: boolean) => {
-    const color = isFocused ? "#FFFFFF" : "#6B7280";
+    const color = isFocused ? "#FFFFFF" : colors.textSecondary;
     const size = 24;
 
     switch (routeName) {
@@ -48,7 +48,10 @@ export default function BottomNav({
     <View
       style={[
         styles.container,
-        { paddingBottom: insets.bottom > 0 ? insets.bottom : 20 },
+        {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
       ]}
     >
       {state.routes.map((route, index) => {
@@ -107,11 +110,9 @@ export default function BottomNav({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    paddingTop: 16,
+    paddingTop: 12,
     paddingHorizontal: 25,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
     justifyContent: "space-between",
     alignItems: "center",
   },
