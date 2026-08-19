@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
+  Animated,
   View,
   Text,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -12,10 +14,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Search, Sun, Moon, CheckCircle2 } from "lucide-react-native";
+import { Search, X, Sun, Moon, CheckCircle2 } from "lucide-react-native";
 import { breakingNewsData, newsSections } from "@/src/data/newsData";
 import { useAppDispatch, useThemeColors } from "@/src/store/hooks";
 import { toggleTheme } from "@/src/store/themeSlice";
+
+const SEARCH_BAR_TRAVEL = 320;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PAGE_PADDING = 15;
@@ -30,6 +34,9 @@ export default function HomeScreen() {
   const dispatch = useAppDispatch();
   const { isDark, colors } = useThemeColors();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchAnim = useRef(new Animated.Value(0)).current;
 
   const handleMomentumScrollEnd = (
     e: NativeSyntheticEvent<NativeScrollEvent>,
@@ -37,6 +44,31 @@ export default function HomeScreen() {
     const index = Math.round(e.nativeEvent.contentOffset.x / SNAP_INTERVAL);
     setActiveIndex(index);
   };
+
+  const openSearch = () => {
+    setIsSearchOpen(true);
+    Animated.timing(searchAnim, {
+      toValue: 1,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeSearch = () => {
+    Animated.timing(searchAnim, {
+      toValue: 0,
+      duration: 280,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    });
+  };
+
+  const searchTranslateX = searchAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [SEARCH_BAR_TRAVEL, 0],
+  });
 
   return (
     <View
@@ -53,29 +85,57 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.paddedSection}>
           <View style={styles.header}>
-            <View style={styles.headerRight}>
-              <TouchableOpacity
+            {isSearchOpen && (
+              <Animated.View
                 style={[
-                  styles.iconButton,
-                  { backgroundColor: colors.iconButtonBg },
+                  styles.searchBarWrap,
+                  {
+                    backgroundColor: colors.iconButtonBg,
+                    transform: [{ translateX: searchTranslateX }],
+                  },
                 ]}
               >
-                <Search color={colors.textPrimary} size={24} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.iconButton,
-                  { backgroundColor: colors.iconButtonBg },
-                ]}
-                onPress={() => dispatch(toggleTheme())}
-              >
-                {isDark ? (
-                  <Sun color={colors.textPrimary} size={24} />
-                ) : (
-                  <Moon color={colors.textPrimary} size={24} />
-                )}
-              </TouchableOpacity>
-            </View>
+                <Search color={colors.textMuted} size={20} />
+                <TextInput
+                  autoFocus
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Search news"
+                  placeholderTextColor={colors.textMuted}
+                  style={[styles.searchInput, { color: colors.textPrimary }]}
+                />
+                <TouchableOpacity onPress={closeSearch}>
+                  <X color={colors.textPrimary} size={20} />
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+
+            {!isSearchOpen && (
+              <View style={styles.headerRight}>
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    { backgroundColor: colors.iconButtonBg },
+                  ]}
+                  onPress={openSearch}
+                >
+                  <Search color={colors.textPrimary} size={24} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    { backgroundColor: colors.iconButtonBg },
+                  ]}
+                  onPress={() => dispatch(toggleTheme())}
+                >
+                  {isDark ? (
+                    <Sun color={colors.textPrimary} size={24} />
+                  ) : (
+                    <Moon color={colors.textPrimary} size={24} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* Breaking News Header */}
@@ -260,10 +320,28 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
     marginBottom: 24,
+    height: 48,
+    position: "relative",
   },
   headerRight: {
     flexDirection: "row",
     gap: 12,
+  },
+  searchBarWrap: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
   },
   iconButton: {
     width: 48,
