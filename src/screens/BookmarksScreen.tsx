@@ -1,14 +1,25 @@
-import { Box } from '@/components/ui/box';
-import { Center } from '@/components/ui/center';
-import { Text } from '@/components/ui/text';
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useThemeColors } from '@/src/store/hooks';
 
 export default function BookmarksScreen() {
+  const { colors } = useThemeColors();
+
   return (
-    <Box className="flex-1 bg-background">
-      <Center className="flex-1">
-        <Text className="font-semibold text-lg">Bookmarks</Text>
-      </Center>
-    </Box>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.text, { color: colors.textPrimary }]}>Bookmarks</Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});

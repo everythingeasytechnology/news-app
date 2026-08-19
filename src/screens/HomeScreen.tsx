@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Menu, Search, Sun, Moon, CheckCircle2 } from "lucide-react-native";
+import { Search, Sun, Moon, CheckCircle2 } from "lucide-react-native";
 import { breakingNewsData, newsSections } from "@/src/data/newsData";
 import { useAppDispatch, useThemeColors } from "@/src/store/hooks";
 import { toggleTheme } from "@/src/store/themeSlice";
@@ -53,14 +53,6 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.paddedSection}>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={[
-                styles.iconButton,
-                { backgroundColor: colors.iconButtonBg },
-              ]}
-            >
-              <Menu color={colors.textPrimary} size={24} />
-            </TouchableOpacity>
             <View style={styles.headerRight}>
               <TouchableOpacity
                 style={[
@@ -265,7 +257,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     marginBottom: 24,
   },

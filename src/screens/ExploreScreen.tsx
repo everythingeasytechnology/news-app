@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { ChevronLeft, Search, SlidersHorizontal } from "lucide-react-native";
+import { Search, SlidersHorizontal } from "lucide-react-native";
 import { allArticles } from "@/src/data/newsData";
+import { useThemeColors } from "@/src/store/hooks";
 
 const CATEGORIES: { label: string; filter: string | null }[] = [
   { label: "All", filter: null },
@@ -29,6 +30,7 @@ const CATEGORIES: { label: string; filter: string | null }[] = [
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors } = useThemeColors();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
@@ -44,7 +46,12 @@ export default function ExploreScreen() {
   }, [selectedCategory, query]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top, backgroundColor: colors.background },
+      ]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -53,19 +60,23 @@ export default function ExploreScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Discover</Text>
-        <Text style={styles.subtitle}>News from all around the world</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          Discover
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          News from all around the world
+        </Text>
 
-        <View style={styles.searchBar}>
-          <Search color="#9CA3AF" size={20} />
+        <View style={[styles.searchBar, { backgroundColor: colors.iconButtonBg }]}>
+          <Search color={colors.textMuted} size={20} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search"
-            placeholderTextColor="#9CA3AF"
-            style={styles.searchInput}
+            placeholderTextColor={colors.textMuted}
+            style={[styles.searchInput, { color: colors.textPrimary }]}
           />
-          <SlidersHorizontal color="#6B7280" size={20} />
+          <SlidersHorizontal color={colors.textSecondary} size={20} />
         </View>
 
         <ScrollView
@@ -81,12 +92,14 @@ export default function ExploreScreen() {
                 onPress={() => setSelectedCategory(category.filter)}
                 style={[
                   styles.categoryPill,
+                  { backgroundColor: colors.iconButtonBg },
                   isActive && styles.categoryPillActive,
                 ]}
               >
                 <Text
                   style={[
                     styles.categoryText,
+                    { color: colors.textSecondary },
                     isActive && styles.categoryTextActive,
                   ]}
                 >
@@ -104,26 +117,40 @@ export default function ExploreScreen() {
               style={styles.articleCard}
               onPress={() => router.push(`/news/${item.id}`)}
             >
-              <Image source={{ uri: item.image }} style={styles.articleImage} />
+              <Image
+                source={{ uri: item.image }}
+                style={[styles.articleImage, { backgroundColor: colors.iconButtonBg }]}
+              />
               <View style={styles.articleContent}>
-                <Text style={styles.articleCategory}>{item.category}</Text>
-                <Text style={styles.articleTitle} numberOfLines={2}>
+                <Text style={[styles.articleCategory, { color: colors.textMuted }]}>
+                  {item.category}
+                </Text>
+                <Text
+                  style={[styles.articleTitle, { color: colors.textPrimary }]}
+                  numberOfLines={2}
+                >
                   {item.title}
                 </Text>
                 <View style={styles.articleFooter}>
                   <Image
                     source={{ uri: item.sourceAvatar }}
-                    style={styles.authorAvatar}
+                    style={[styles.authorAvatar, { backgroundColor: colors.iconButtonBg }]}
                   />
-                  <Text style={styles.authorName}>{item.sourceName}</Text>
-                  <Text style={styles.articleDate}>• {item.metaLine}</Text>
+                  <Text style={[styles.authorName, { color: colors.textSecondary }]}>
+                    {item.sourceName}
+                  </Text>
+                  <Text style={[styles.articleDate, { color: colors.textMuted }]}>
+                    • {item.metaLine}
+                  </Text>
                 </View>
               </View>
             </TouchableOpacity>
           ))}
 
           {filteredArticles.length === 0 && (
-            <Text style={styles.emptyText}>No stories found.</Text>
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+              No stories found.
+            </Text>
           )}
         </View>
       </ScrollView>
@@ -134,7 +161,6 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   scrollView: {
     flex: 1,
@@ -143,30 +169,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 16,
   },
-  backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#F3F4F6",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
   title: {
     fontSize: 34,
     fontWeight: "800",
-    color: "#000000",
   },
   subtitle: {
     fontSize: 15,
-    color: "#9CA3AF",
     marginTop: 6,
     marginBottom: 24,
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F3F4F6",
     borderRadius: 9999,
     paddingHorizontal: 16,
     height: 52,
@@ -175,7 +189,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: "#000000",
   },
   categoryRow: {
     gap: 10,
@@ -185,7 +198,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 9999,
-    backgroundColor: "#F3F4F6",
   },
   categoryPillActive: {
     backgroundColor: "#0EA5E9",
@@ -193,7 +205,6 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#6B7280",
   },
   categoryTextActive: {
     color: "#FFFFFF",
@@ -210,19 +221,16 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 16,
-    backgroundColor: "#E5E7EB",
   },
   articleContent: {
     flex: 1,
     justifyContent: "center",
   },
   articleCategory: {
-    color: "#9CA3AF",
     fontSize: 14,
     marginBottom: 4,
   },
   articleTitle: {
-    color: "#000000",
     fontWeight: "700",
     fontSize: 16,
     lineHeight: 22,
@@ -237,19 +245,15 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#E5E7EB",
   },
   authorName: {
-    color: "#6B7280",
     fontSize: 14,
   },
   articleDate: {
-    color: "#9CA3AF",
     fontSize: 14,
   },
   emptyText: {
     textAlign: "center",
-    color: "#9CA3AF",
     marginTop: 40,
   },
 });

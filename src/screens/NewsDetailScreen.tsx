@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Bookmark, MoreHorizontal, CheckCircle2 } from 'lucide-react-native';
 import { Article } from '@/src/data/newsData';
+import { useThemeColors } from '@/src/store/hooks';
 
 const HERO_HEIGHT = 480;
 const SHEET_OVERLAP = 32;
@@ -11,9 +12,10 @@ const SHEET_OVERLAP = 32;
 export default function NewsDetailScreen({ article }: { article: Article }) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors } = useThemeColors();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Hero — fixed in place behind the scrolling sheet */}
       <View style={styles.heroWrapper}>
         <Image source={{ uri: article.image }} style={styles.heroImage} resizeMode="cover" />
@@ -33,15 +35,20 @@ export default function NewsDetailScreen({ article }: { article: Article }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: HERO_HEIGHT - SHEET_OVERLAP }}
       >
-        <View style={styles.contentSheet}>
+        <View style={[styles.contentSheet, { backgroundColor: colors.surface }]}>
           <View style={styles.sourceRow}>
-            <Image source={{ uri: article.sourceAvatar }} style={styles.sourceAvatar} />
-            <Text style={styles.sourceName}>{article.sourceName}</Text>
+            <Image
+              source={{ uri: article.sourceAvatar }}
+              style={[styles.sourceAvatar, { backgroundColor: colors.iconButtonBg }]}
+            />
+            <Text style={[styles.sourceName, { color: colors.textPrimary }]}>
+              {article.sourceName}
+            </Text>
             {article.verified && <CheckCircle2 color="#0ea5e9" fill="#fff" size={18} />}
           </View>
 
           {article.body.map((paragraph, index) => (
-            <Text key={index} style={styles.paragraph}>
+            <Text key={index} style={[styles.paragraph, { color: colors.textSecondary }]}>
               {paragraph}
             </Text>
           ))}
@@ -69,7 +76,6 @@ export default function NewsDetailScreen({ article }: { article: Article }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   heroWrapper: {
     position: 'absolute',
@@ -137,7 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   contentSheet: {
-    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingHorizontal: 15,
@@ -154,18 +159,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E5E7EB',
   },
   sourceName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000000',
     flex: 1,
   },
   paragraph: {
     fontSize: 16,
     lineHeight: 26,
-    color: '#374151',
     marginBottom: 20,
   },
 });

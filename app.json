@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "starter-kit-expo",
-    "slug": "starter-kit-expo",
+    "name": "News",
+    "slug": "everythingeasy-news-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "starterkitexpo",
+    "scheme": "everythingeasy-news-app",
     "userInterfaceStyle": "automatic",
     "android": {
       "adaptiveIcon": {
