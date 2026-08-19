@@ -1,18 +1,12 @@
-import { Fab, FabIcon } from '@/components/ui/fab';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
-import { MoonIcon, SunIcon } from '@/components/ui/icon';
 import '@/global.css';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from 'expo-router';
+import { DefaultTheme, ThemeProvider } from 'expo-router';
 import { useFonts } from 'expo-font';
-import { Slot, usePathname } from 'expo-router';
+import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -43,29 +37,13 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const pathname = usePathname();
-  const [colorMode, setColorMode] = useState<'light' | 'dark' | 'system'>(
-    'dark'
-  );
-
   return (
-    <ThemeProvider value={colorMode === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={DefaultTheme}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <GluestackUIProvider mode={colorMode}>
-            <StatusBar style={colorMode === 'dark' ? 'light' : 'dark'} />
+          <GluestackUIProvider mode="light">
+            <StatusBar style="dark" />
             <Slot />
-            {pathname === '/' && (
-              <Fab
-                onPress={() =>
-                  setColorMode(colorMode === 'dark' ? 'light' : 'dark')
-                }
-                className="m-6"
-                size="lg"
-              >
-                <FabIcon as={colorMode === 'dark' ? MoonIcon : SunIcon} />
-              </Fab>
-            )}
           </GluestackUIProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
