@@ -19,14 +19,17 @@ import { breakingNewsData, newsSections } from "@/src/data/newsData";
 import { useAppDispatch, useThemeColors } from "@/src/store/hooks";
 import { toggleTheme } from "@/src/store/themeSlice";
 
-const SEARCH_BAR_TRAVEL = 320;
-
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PAGE_PADDING = 15;
 const CARD_SPACING = 12;
 const SIDE_INSET = PAGE_PADDING;
 const CARD_WIDTH = SCREEN_WIDTH - PAGE_PADDING * 2;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_SPACING;
+
+// Header row width minus the two fixed icon buttons + gaps, i.e. the space
+// the search bar grows into, anchored against the search button.
+const HEADER_ROW_WIDTH = SCREEN_WIDTH - PAGE_PADDING * 2;
+const SEARCH_BAR_OPEN_WIDTH = HEADER_ROW_WIDTH - (48 + 12 + 48) - 12;
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -50,7 +53,7 @@ export default function HomeScreen() {
     Animated.timing(searchAnim, {
       toValue: 1,
       duration: 280,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
   };
 
@@ -58,16 +61,20 @@ export default function HomeScreen() {
     Animated.timing(searchAnim, {
       toValue: 0,
       duration: 280,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start(() => {
       setIsSearchOpen(false);
       setSearchQuery("");
     });
   };
 
-  const searchTranslateX = searchAnim.interpolate({
+  const searchBarWidth = searchAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [SEARCH_BAR_TRAVEL, 0],
+    outputRange: [0, SEARCH_BAR_OPEN_WIDTH],
+  });
+  const searchBarOpacity = searchAnim.interpolate({
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, 0, 1],
   });
 
   return (
@@ -85,57 +92,59 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.paddedSection}>
           <View style={styles.header}>
-            {isSearchOpen && (
-              <Animated.View
-                style={[
-                  styles.searchBarWrap,
-                  {
-                    backgroundColor: colors.iconButtonBg,
-                    transform: [{ translateX: searchTranslateX }],
-                  },
-                ]}
-              >
-                <Search color={colors.textMuted} size={20} />
-                <TextInput
-                  autoFocus
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Search news"
-                  placeholderTextColor={colors.textMuted}
-                  style={[styles.searchInput, { color: colors.textPrimary }]}
-                />
-                <TouchableOpacity onPress={closeSearch}>
-                  <X color={colors.textPrimary} size={20} />
-                </TouchableOpacity>
-              </Animated.View>
-            )}
+            <Animated.View
+              style={[
+                styles.searchBarWrap,
+                {
+                  width: searchBarWidth,
+                  opacity: searchBarOpacity,
+                  backgroundColor: colors.iconButtonBg,
+                },
+              ]}
+            >
+              {isSearchOpen && (
+                <>
+                  <Search color={colors.textMuted} size={18} />
+                  <TextInput
+                    autoFocus
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholder="Search news"
+                    placeholderTextColor={colors.textMuted}
+                    style={[styles.searchInput, { color: colors.textPrimary }]}
+                  />
+                </>
+              )}
+            </Animated.View>
 
-            {!isSearchOpen && (
-              <View style={styles.headerRight}>
-                <TouchableOpacity
-                  style={[
-                    styles.iconButton,
-                    { backgroundColor: colors.iconButtonBg },
-                  ]}
-                  onPress={openSearch}
-                >
+            <View style={styles.headerRight}>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  { backgroundColor: colors.iconButtonBg },
+                ]}
+                onPress={isSearchOpen ? closeSearch : openSearch}
+              >
+                {isSearchOpen ? (
+                  <X color={colors.textPrimary} size={24} />
+                ) : (
                   <Search color={colors.textPrimary} size={24} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.iconButton,
-                    { backgroundColor: colors.iconButtonBg },
-                  ]}
-                  onPress={() => dispatch(toggleTheme())}
-                >
-                  {isDark ? (
-                    <Sun color={colors.textPrimary} size={24} />
-                  ) : (
-                    <Moon color={colors.textPrimary} size={24} />
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  { backgroundColor: colors.iconButtonBg },
+                ]}
+                onPress={() => dispatch(toggleTheme())}
+              >
+                {isDark ? (
+                  <Sun color={colors.textPrimary} size={24} />
+                ) : (
+                  <Moon color={colors.textPrimary} size={24} />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Breaking News Header */}
@@ -321,23 +330,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
     height: 48,
-    position: "relative",
   },
   headerRight: {
     flexDirection: "row",
     gap: 12,
   },
   searchBarWrap: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
     height: 48,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
     borderRadius: 24,
     paddingHorizontal: 16,
+    marginRight: 12,
+    overflow: "hidden",
   },
   searchInput: {
     flex: 1,

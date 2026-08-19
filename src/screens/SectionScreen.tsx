@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   View,
   Text,
   ScrollView,
@@ -7,12 +8,42 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  LayoutAnimation,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Search, SlidersHorizontal } from "lucide-react-native";
 import { Article } from "@/src/data/newsData";
 import { useThemeColors } from "@/src/store/hooks";
+
+const FADE_IN_LAYOUT_ANIM = {
+  duration: 280,
+  create: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+  update: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+  },
+  delete: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+};
+
+function FadeInItem({ children }: { children: React.ReactNode }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: true,
+    }).start();
+  }, [opacity]);
+
+  return <Animated.View style={{ opacity }}>{children}</Animated.View>;
+}
 
 interface SectionScreenProps {
   title: string;
@@ -24,12 +55,19 @@ export default function SectionScreen({ title, articles }: SectionScreenProps) {
   const router = useRouter();
   const { colors } = useThemeColors();
   const [query, setQuery] = useState("");
+  const [searchGeneration, setSearchGeneration] = useState(0);
 
   const filteredArticles = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return articles;
     return articles.filter((article) => article.title.toLowerCase().includes(q));
   }, [articles, query]);
+
+  const handleQueryChange = (text: string) => {
+    LayoutAnimation.configureNext(FADE_IN_LAYOUT_ANIM);
+    setSearchGeneration((g) => g + 1);
+    setQuery(text);
+  };
 
   return (
     <View
@@ -55,7 +93,7 @@ export default function SectionScreen({ title, articles }: SectionScreenProps) {
           <Search color={colors.textMuted} size={20} />
           <TextInput
             value={query}
-            onChangeText={setQuery}
+            onChangeText={handleQueryChange}
             placeholder="Search"
             placeholderTextColor={colors.textMuted}
             style={[styles.searchInput, { color: colors.textPrimary }]}
@@ -65,39 +103,40 @@ export default function SectionScreen({ title, articles }: SectionScreenProps) {
 
         <View style={styles.articleList}>
           {filteredArticles.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.articleCard}
-              onPress={() => router.push(`/news/${item.id}`)}
-            >
-              <Image
-                source={{ uri: item.image }}
-                style={[styles.articleImage, { backgroundColor: colors.iconButtonBg }]}
-              />
-              <View style={styles.articleContent}>
-                <Text style={[styles.articleCategory, { color: colors.textMuted }]}>
-                  {item.category}
-                </Text>
-                <Text
-                  style={[styles.articleTitle, { color: colors.textPrimary }]}
-                  numberOfLines={2}
-                >
-                  {item.title}
-                </Text>
-                <View style={styles.articleFooter}>
-                  <Image
-                    source={{ uri: item.sourceAvatar }}
-                    style={[styles.authorAvatar, { backgroundColor: colors.iconButtonBg }]}
-                  />
-                  <Text style={[styles.authorName, { color: colors.textSecondary }]}>
-                    {item.sourceName}
+            <FadeInItem key={`${item.id}-${searchGeneration}`}>
+              <TouchableOpacity
+                style={styles.articleCard}
+                onPress={() => router.push(`/news/${item.id}`)}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={[styles.articleImage, { backgroundColor: colors.iconButtonBg }]}
+                />
+                <View style={styles.articleContent}>
+                  <Text style={[styles.articleCategory, { color: colors.textMuted }]}>
+                    {item.category}
                   </Text>
-                  <Text style={[styles.articleDate, { color: colors.textMuted }]}>
-                    • {item.metaLine}
+                  <Text
+                    style={[styles.articleTitle, { color: colors.textPrimary }]}
+                    numberOfLines={2}
+                  >
+                    {item.title}
                   </Text>
+                  <View style={styles.articleFooter}>
+                    <Image
+                      source={{ uri: item.sourceAvatar }}
+                      style={[styles.authorAvatar, { backgroundColor: colors.iconButtonBg }]}
+                    />
+                    <Text style={[styles.authorName, { color: colors.textSecondary }]}>
+                      {item.sourceName}
+                    </Text>
+                    <Text style={[styles.articleDate, { color: colors.textMuted }]}>
+                      • {item.metaLine}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </FadeInItem>
           ))}
 
           {filteredArticles.length === 0 && (

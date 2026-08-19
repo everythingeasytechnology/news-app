@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   View,
   Text,
   ScrollView,
@@ -7,12 +8,42 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  LayoutAnimation,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Search, SlidersHorizontal } from "lucide-react-native";
 import { allArticles } from "@/src/data/newsData";
 import { useThemeColors } from "@/src/store/hooks";
+
+function FadeInItem({ children }: { children: React.ReactNode }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: true,
+    }).start();
+  }, [opacity]);
+
+  return <Animated.View style={{ opacity }}>{children}</Animated.View>;
+}
+
+const FADE_IN_LAYOUT_ANIM = {
+  duration: 280,
+  create: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+  update: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+  },
+  delete: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+};
 
 const CATEGORIES: { label: string; filter: string | null }[] = [
   { label: "All", filter: null },
@@ -33,6 +64,7 @@ export default function ExploreScreen() {
   const { colors } = useThemeColors();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [searchGeneration, setSearchGeneration] = useState(0);
 
   const filteredArticles = useMemo(() => {
     return allArticles.filter((article) => {
@@ -44,6 +76,21 @@ export default function ExploreScreen() {
       return matchesCategory && matchesQuery;
     });
   }, [selectedCategory, query]);
+
+  const animateNext = () => {
+    LayoutAnimation.configureNext(FADE_IN_LAYOUT_ANIM);
+    setSearchGeneration((g) => g + 1);
+  };
+
+  const handleQueryChange = (text: string) => {
+    animateNext();
+    setQuery(text);
+  };
+
+  const handleCategoryPress = (filter: string | null) => {
+    animateNext();
+    setSelectedCategory(filter);
+  };
 
   return (
     <View
@@ -71,7 +118,7 @@ export default function ExploreScreen() {
           <Search color={colors.textMuted} size={20} />
           <TextInput
             value={query}
-            onChangeText={setQuery}
+            onChangeText={handleQueryChange}
             placeholder="Search"
             placeholderTextColor={colors.textMuted}
             style={[styles.searchInput, { color: colors.textPrimary }]}
@@ -89,7 +136,7 @@ export default function ExploreScreen() {
             return (
               <TouchableOpacity
                 key={category.label}
-                onPress={() => setSelectedCategory(category.filter)}
+                onPress={() => handleCategoryPress(category.filter)}
                 style={[
                   styles.categoryPill,
                   { backgroundColor: colors.iconButtonBg },
@@ -112,39 +159,40 @@ export default function ExploreScreen() {
 
         <View style={styles.articleList}>
           {filteredArticles.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.articleCard}
-              onPress={() => router.push(`/news/${item.id}`)}
-            >
-              <Image
-                source={{ uri: item.image }}
-                style={[styles.articleImage, { backgroundColor: colors.iconButtonBg }]}
-              />
-              <View style={styles.articleContent}>
-                <Text style={[styles.articleCategory, { color: colors.textMuted }]}>
-                  {item.category}
-                </Text>
-                <Text
-                  style={[styles.articleTitle, { color: colors.textPrimary }]}
-                  numberOfLines={2}
-                >
-                  {item.title}
-                </Text>
-                <View style={styles.articleFooter}>
-                  <Image
-                    source={{ uri: item.sourceAvatar }}
-                    style={[styles.authorAvatar, { backgroundColor: colors.iconButtonBg }]}
-                  />
-                  <Text style={[styles.authorName, { color: colors.textSecondary }]}>
-                    {item.sourceName}
+            <FadeInItem key={`${item.id}-${searchGeneration}`}>
+              <TouchableOpacity
+                style={styles.articleCard}
+                onPress={() => router.push(`/news/${item.id}`)}
+              >
+                <Image
+                  source={{ uri: item.image }}
+                  style={[styles.articleImage, { backgroundColor: colors.iconButtonBg }]}
+                />
+                <View style={styles.articleContent}>
+                  <Text style={[styles.articleCategory, { color: colors.textMuted }]}>
+                    {item.category}
                   </Text>
-                  <Text style={[styles.articleDate, { color: colors.textMuted }]}>
-                    • {item.metaLine}
+                  <Text
+                    style={[styles.articleTitle, { color: colors.textPrimary }]}
+                    numberOfLines={2}
+                  >
+                    {item.title}
                   </Text>
+                  <View style={styles.articleFooter}>
+                    <Image
+                      source={{ uri: item.sourceAvatar }}
+                      style={[styles.authorAvatar, { backgroundColor: colors.iconButtonBg }]}
+                    />
+                    <Text style={[styles.authorName, { color: colors.textSecondary }]}>
+                      {item.sourceName}
+                    </Text>
+                    <Text style={[styles.articleDate, { color: colors.textMuted }]}>
+                      • {item.metaLine}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </FadeInItem>
           ))}
 
           {filteredArticles.length === 0 && (
