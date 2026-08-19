@@ -1,25 +1,20 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useThemeColors } from '@/src/store/hooks';
+import React from "react";
+import SectionScreen from "@/src/screens/SectionScreen";
+import { allArticles, Article } from "@/src/data/newsData";
+
+const BOOKMARKED_IDS = [
+  "break-1",
+  "rec-3",
+  "tech-2",
+  "pol-2",
+  "sport-1",
+  "movie-1",
+];
+
+const bookmarkedArticles: Article[] = BOOKMARKED_IDS.map((id) =>
+  allArticles.find((article) => article.id === id),
+).filter((article): article is Article => article !== undefined);
 
 export default function BookmarksScreen() {
-  const { colors } = useThemeColors();
-
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.text, { color: colors.textPrimary }]}>Bookmarks</Text>
-    </View>
-  );
+  return <SectionScreen title="Bookmarks" articles={bookmarkedArticles} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});

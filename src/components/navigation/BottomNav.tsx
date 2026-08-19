@@ -16,7 +16,7 @@ export default function BottomNav({
     const size = 24;
 
     switch (routeName) {
-      case "index":
+      case "home":
         return <Home color={color} size={size} />;
       case "explore":
         return <Globe color={color} size={size} />;
@@ -31,7 +31,7 @@ export default function BottomNav({
 
   const getLabel = (routeName: string) => {
     switch (routeName) {
-      case "index":
+      case "home":
         return "Home";
       case "explore":
         return "Discover";

@@ -5,11 +5,12 @@ export default function TabsLayout() {
   return (
     <Tabs
       tabBar={(props) => <BottomNav {...props} />}
+      initialRouteName="home"
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Tabs.Screen name="index" />
+      <Tabs.Screen name="home" />
       <Tabs.Screen name="explore" />
       <Tabs.Screen name="bookmarks" />
       <Tabs.Screen name="profile" />
